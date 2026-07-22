@@ -2,6 +2,9 @@ import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
+import { authRouter } from './modules/auth/auth.router';
+import { usersRouter } from './modules/users/users.router';
+import { errorHandler } from './middleware/errorHandler';
 
 export function createApp() {
   const app = express();
@@ -12,7 +15,10 @@ export function createApp() {
 
   app.get('/health', (_req, res) => res.json({ status: 'ok' }));
 
-  // Routers mounted in later tasks.
+  app.use('/auth', authRouter);
+  app.use('/users', usersRouter);
+
+  app.use(errorHandler);
 
   return app;
 }
