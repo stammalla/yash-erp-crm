@@ -1,0 +1,184 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  sales
+  warehouse
+  accounts
+}
+
+enum CustomerType {
+  retail
+  wholesale
+  distributor
+}
+
+enum CustomerStatus {
+  lead
+  active
+  inactive
+}
+
+enum MovementType {
+  in_
+  out
+}
+
+enum ChallanStatus {
+  draft
+  confirmed
+  cancelled
+}
+
+enum PaymentStatus {
+  unpaid
+  partial
+  paid
+}
+
+model User {
+  id           String   @id @default(uuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  customers    Customer[]
+  notes        CustomerNote[]
+  products     Product[]
+  movements    StockMovement[]
+  challans     Challan[]
+  invoices     Invoice[]
+
+  @@map("users")
+}
+
+model Customer {
+  id           String         @id @default(uuid())
+  name         String
+  mobile       String
+  email        String?
+  businessName String?        @map("business_name")
+  gstNumber    String?        @map("gst_number")
+  type         CustomerType
+  address      String?
+  status       CustomerStatus @default(lead)
+  followUpDate DateTime?      @map("follow_up_date")
+  createdBy    String?        @map("created_by")
+  creator      User?          @relation(fields: [createdBy], references: [id])
+  createdAt    DateTime       @default(now()) @map("created_at")
+  updatedAt    DateTime       @updatedAt @map("updated_at")
+
+  notes        CustomerNote[]
+  challans     Challan[]
+  invoices     Invoice[]
+
+  @@map("customers")
+}
+
+model CustomerNote {
+  id         String   @id @default(uuid())
+  customerId String   @map("customer_id")
+  customer   Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  note       String
+  createdBy  String?  @map("created_by")
+  creator    User?    @relation(fields: [createdBy], references: [id])
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@map("customer_notes")
+}
+
+model Product {
+  id                String   @id @default(uuid())
+  name              String
+  sku               String   @unique
+  category          String?
+  unitPrice         Decimal  @map("unit_price") @db.Decimal(10, 2)
+  currentStock      Int      @default(0) @map("current_stock")
+  minStockQty       Int      @default(0) @map("min_stock_qty")
+  warehouseLocation String?  @map("warehouse_location")
+  imageUrl          String?  @map("image_url")
+  createdBy         String?  @map("created_by")
+  creator           User?    @relation(fields: [createdBy], references: [id])
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  movements     StockMovement[]
+  challanItems  ChallanItem[]
+
+  @@map("products")
+}
+
+model StockMovement {
+  id        String       @id @default(uuid())
+  productId String       @map("product_id")
+  product   Product      @relation(fields: [productId], references: [id])
+  quantity  Int
+  type      MovementType
+  reason    String?
+  createdBy String?      @map("created_by")
+  creator   User?        @relation(fields: [createdBy], references: [id])
+  createdAt DateTime     @default(now()) @map("created_at")
+
+  @@map("stock_movements")
+}
+
+model Challan {
+  id            String        @id @default(uuid())
+  challanNumber String        @unique @map("challan_number")
+  customerId    String        @map("customer_id")
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  status        ChallanStatus @default(draft)
+  totalQuantity Int           @default(0) @map("total_quantity")
+  createdBy     String?       @map("created_by")
+  creator       User?         @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  items   ChallanItem[]
+  invoice Invoice?
+
+  @@map("challans")
+}
+
+model ChallanItem {
+  id          String  @id @default(uuid())
+  challanId   String  @map("challan_id")
+  challan     Challan @relation(fields: [challanId], references: [id], onDelete: Cascade)
+  productId   String  @map("product_id")
+  product     Product @relation(fields: [productId], references: [id])
+  productName String  @map("product_name")
+  productSku  String  @map("product_sku")
+  unitPrice   Decimal @map("unit_price") @db.Decimal(10, 2)
+  quantity    Int
+
+  @@map("challan_items")
+}
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique @map("invoice_number")
+  challanId     String        @unique @map("challan_id")
+  challan       Challan       @relation(fields: [challanId], references: [id])
+  customerId    String        @map("customer_id")
+  customer      Customer      @relation(fields: [customerId], references: [id])
+  subtotal      Decimal       @db.Decimal(10, 2)
+  gstPercent    Decimal       @default(18) @map("gst_percent") @db.Decimal(5, 2)
+  gstAmount     Decimal       @map("gst_amount") @db.Decimal(10, 2)
+  totalAmount   Decimal       @map("total_amount") @db.Decimal(10, 2)
+  paymentStatus PaymentStatus @default(unpaid) @map("payment_status")
+  pdfUrl        String?       @map("pdf_url")
+  createdBy     String?       @map("created_by")
+  creator       User?         @relation(fields: [createdBy], references: [id])
+  createdAt     DateTime      @default(now()) @map("created_at")
+
+  @@map("invoices")
+}
