@@ -4,6 +4,7 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import { authRouter } from './modules/auth/auth.router';
 import { usersRouter } from './modules/users/users.router';
+import { customersRouter } from './modules/customers/customers.router';
 import { errorHandler } from './middleware/errorHandler';
 
 export function createApp() {
@@ -17,6 +18,7 @@ export function createApp() {
 
   app.use('/auth', authRouter);
   app.use('/users', usersRouter);
+  app.use('/customers', customersRouter);
 
   app.use(errorHandler);
 
