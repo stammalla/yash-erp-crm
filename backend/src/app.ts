@@ -9,6 +9,7 @@ import { productsRouter } from './modules/products/products.router';
 import { stockRouter } from './modules/stock/stock.router';
 import { challansRouter } from './modules/challans/challans.router';
 import { invoicesRouter } from './modules/invoices/invoices.router';
+import { dashboardRouter } from './modules/dashboard/dashboard.router';
 import { errorHandler } from './middleware/errorHandler';
 
 export function createApp() {
@@ -27,6 +28,7 @@ export function createApp() {
   app.use('/stock-movements', stockRouter);
   app.use('/challans', challansRouter);
   app.use('/invoices', invoicesRouter);
+  app.use('/dashboard', dashboardRouter);
 
   app.use(errorHandler);
 
