@@ -1,0 +1,87 @@
+{
+  "info": { "name": "ERP CRM", "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json" },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Auth - Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/auth/login",
+        "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@erp.local\",\n  \"password\": \"Admin@123\"\n}" }
+      },
+      "event": [{
+        "listen": "test",
+        "script": { "exec": ["pm.collectionVariables.set('token', pm.response.json().token);"] }
+      }]
+    },
+    {
+      "name": "Customers - List",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/customers?page=1&limit=10" }
+    },
+    {
+      "name": "Customers - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/customers",
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Co\",\n  \"mobile\": \"9998887777\",\n  \"type\": \"wholesale\"\n}" }
+      }
+    },
+    {
+      "name": "Products - List",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/products?page=1&limit=10" }
+    },
+    {
+      "name": "Products - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/products",
+        "body": { "mode": "raw", "raw": "{\n  \"name\": \"New Product\",\n  \"sku\": \"NP-1\",\n  \"unitPrice\": 10,\n  \"currentStock\": 100,\n  \"minStockQty\": 10\n}" }
+      }
+    },
+    {
+      "name": "Stock - Create Movement",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/stock-movements",
+        "body": { "mode": "raw", "raw": "{\n  \"productId\": \"REPLACE\",\n  \"quantity\": 10,\n  \"type\": \"in\",\n  \"reason\": \"restock\"\n}" }
+      }
+    },
+    {
+      "name": "Challans - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/challans",
+        "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"REPLACE\",\n  \"items\": [{ \"productId\": \"REPLACE\", \"quantity\": 2 }]\n}" }
+      }
+    },
+    {
+      "name": "Challans - Confirm",
+      "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/challans/REPLACE/confirm" }
+    },
+    {
+      "name": "Invoices - Create",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }],
+        "url": "{{baseUrl}}/invoices",
+        "body": { "mode": "raw", "raw": "{\n  \"challanId\": \"REPLACE\"\n}" }
+      }
+    },
+    {
+      "name": "Invoices - PDF",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/invoices/REPLACE/pdf" }
+    },
+    {
+      "name": "Dashboard",
+      "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/dashboard" }
+    }
+  ]
+}
